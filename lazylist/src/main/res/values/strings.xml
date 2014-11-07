@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">LazyList</string>
+    <string name="server_error_msg">Server error</string>
+
+    <!--Lazy List-->
+    <string name="list_end">End of the list</string>
+    <string name="unknown_error">Unknown error</string>
+    <string name="repeat_req_msg">Request not successful. Repeat?</string>
+    <string name="data_loaded_db">Data loaded from database</string>
+    <string name="db_data_empty">Data unavailable. Check network connection</string>
+</resources>
