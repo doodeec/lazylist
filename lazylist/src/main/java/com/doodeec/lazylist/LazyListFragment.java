@@ -1,9 +1,5 @@
 package com.doodeec.lazylist;
 
-/**
- * Created by Dusan Doodeec Bartos on 7.11.2014.
- */
-
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Build;
