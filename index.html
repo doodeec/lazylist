@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title>Lazylist by doodeec</title>
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1>Lazylist</h1>
+        <h2>Android Lazy List</h2>
+        <a href="https://github.com/doodeec/lazylist" class="button"><small>View project on</small> GitHub</a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          <h1>
+<a id="lazylist" class="anchor" href="#lazylist" aria-hidden="true"><span class="octicon octicon-link"></span></a>LazyList</h1>
+
+<h1>
+<a id="android-lazy-list-component" class="anchor" href="#android-lazy-list-component" aria-hidden="true"><span class="octicon octicon-link"></span></a>Android Lazy List component</h1>
+
+<h2>
+<a id="version" class="anchor" href="#version" aria-hidden="true"><span class="octicon octicon-link"></span></a>Version</h2>
+
+<p>1.0.0</p>
+
+<h3>
+<a id="description" class="anchor" href="#description" aria-hidden="true"><span class="octicon octicon-link"></span></a>Description</h3>
+
+<p>LazyList component for Android. ListView which supports lazy loading of resources (data), either
+synchronously (from memory, from local DB...) or asynchronously (HTTP, REST, ...).</p>
+
+<p>Motivation is, that even when you have the data available in the memory, once you are porting it to
+listView adapter, it can get really slow to initialize the listView with large amount of data (200+ items).
+Speeding this process up is really easy with <strong>LazyList</strong>, because you can first initialize the adapter with
+only small amount of data, but later add all items as user will scroll the list down.</p>
+
+<pre><code>public class MovieListFragment extends LazyList&lt;Movie&gt; { ... }
+</code></pre>
+
+<pre><code>public class MovieListAdapter extends LazyListAdapter&lt;Movie&gt; { ... }
+</code></pre>
+
+<p>Another case can be using a REST service to load the data. If you have a REST service which supports paging
+(you should have :) ) it is easy to override <code>loadPage</code> method to call REST service directly. Just
+define success/error callbacks and new data will automatically refresh the list.</p>
+
+<pre><code>@Override
+protected synchronized void loadPage(final int page) {
+    super.loadPage(page);
+
+    ResourceService.loadMovies(page, new ServerResponseListener&lt;Movie[]&gt;() {
+        @Override
+        public void onSuccess(Movie[] movies) {
+            if (movies.length &gt; 0) {
+                mData.addAll(Arrays.asList(movies));
+                onDataLoadingCompleted(page);
+
+                // save data to DB (handles create/update)
+                MovieProvider.saveMoviesToDb(mData);
+            } else {
+                onDataLoadingFailed(REASON_LIST_END, null);
+            }
+        }
+
+        @Override
+        public void onError(ErrorResponse error) {
+            onDataLoadingFailed(LazyList.REASON_SERVER_ERROR, page);
+        }
+        ...
+    });
+}
+</code></pre>
+
+<h3>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage</h3>
+
+<p>Just import <code>com.doodeec.lazylist-X.Y.Z.aar</code> into your project and override adapter and fragment to
+use desired types (you can look at the demo - <a href="http://github.com/doodeec/filmster">Filmster project</a>
+where it is used).</p>
+
+<pre><code>dependencies {
+    compile(name:'com.doodeec.lazylist-1.0.0', ext:'aar')
+    ...
+}
+</code></pre>
+
+<h3>
+<a id="support" class="anchor" href="#support" aria-hidden="true"><span class="octicon octicon-link"></span></a>Support</h3>
+
+<p>Supports generic types - you can extend both adapter and fragment to use any kind of data
+Supports Android SDK API10+ (2.3+)</p>
+
+<h3>
+<a id="licence" class="anchor" href="#licence" aria-hidden="true"><span class="octicon octicon-link"></span></a>Licence</h3>
+
+<p>released under Apache 2.0 licence</p>
+
+<h3>
+<a id="demo" class="anchor" href="#demo" aria-hidden="true"><span class="octicon octicon-link"></span></a>Demo</h3>
+
+<p>Check out <a href="http://github.com/doodeec/filmster">Filmster project</a> to see the demo project which
+fully takes advantage of <strong>LazyList</strong> library</p>
+
+<h3>
+<a id="author" class="anchor" href="#author" aria-hidden="true"><span class="octicon octicon-link"></span></a>Author</h3>
+
+<p><a href="http://doodeec.com">Dusan Bartos</a>
+In case of any questions, do not hesitate to contact me - <a href="mailto:doodeec@gmail.com">doodeec@gmail.com</a></p>
+        </section>
+
+        <aside id="sidebar">
+          <a href="https://github.com/doodeec/lazylist/zipball/master" class="button">
+            <small>Download</small>
+            .zip file
+          </a>
+          <a href="https://github.com/doodeec/lazylist/tarball/master" class="button">
+            <small>Download</small>
+            .tar.gz file
+          </a>
+
+          <p class="repo-owner"><a href="https://github.com/doodeec/lazylist"></a> is maintained by <a href="https://github.com/doodeec">doodeec</a>.</p>
+
+          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
+        </aside>
+      </div>
+    </div>
+
+            <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-57202262-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+  </body>
+</html>
