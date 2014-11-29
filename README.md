@@ -63,6 +63,11 @@ Just import `com.doodeec.lazylist-X.Y.Z.aar` into your project and override adap
 use desired types (you can look at the demo - [Filmster project](http://github.com/doodeec/filmster)
 where it is used).
 
+    dependencies {
+        compile(name:'com.doodeec.lazylist-1.0.0', ext:'aar')
+        ...
+    }
+
 ### Support
 
 Supports generic types - you can extend both adapter and fragment to use any kind of data
