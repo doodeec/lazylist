@@ -207,14 +207,15 @@ public class LazyListFragment<Type> extends ListFragment {
                 break;
         }
 
-        if (getActivity() != null && showRepeatDialog) {
+        final boolean showRepeatDialogDelegate = showRepeatDialog;
+        if (getActivity() != null) {
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     setLoadingProgress(false);
 
                     //prompt request repeat
-                    if (page != null) {
+                    if (page != null && showRepeatDialogDelegate) {
                         showRepeatDialog(page);
                     }
                 }
