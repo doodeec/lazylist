@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.app.ListFragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,7 +22,8 @@ import java.util.List;
  * Extends {@link android.support.v4.app.ListFragment}
  * Features loading indicator at the bottom of the list to enable lazy loading of data
  */
-public class LazyListFragment<T> extends android.support.v4.app.ListFragment {
+@SuppressWarnings("unused")
+public class LazyListFragment<Type> extends ListFragment {
 
     public static final int REASON_LIST_END = 1;
     public static final int REASON_SERVER_ERROR = 2;
@@ -41,7 +43,7 @@ public class LazyListFragment<T> extends android.support.v4.app.ListFragment {
     protected int mPage = 0;
     protected boolean mLoading = false;
     protected boolean mBlockLazyLoad = false;
-    protected final List<T> mData = new ArrayList<T>();
+    protected final List<Type> mData = new ArrayList<Type>();
     protected LazyAdapter mAdapter;
     protected RelativeLayout mProgress;
     protected AlertDialog mRepeatDialog;
@@ -107,7 +109,7 @@ public class LazyListFragment<T> extends android.support.v4.app.ListFragment {
      * Subclasses should override this method to specify adapter at this point
      */
     protected void initAdapter() {
-        mAdapter = new LazyAdapter<T>(mData, LazyListFragment.this);
+        mAdapter = new LazyAdapter<Type>(mData, LazyListFragment.this);
     }
 
     /**
@@ -124,7 +126,13 @@ public class LazyListFragment<T> extends android.support.v4.app.ListFragment {
      * Revives currently available data and last page number
      */
     protected void reviveData() {
-        //TODO
+        mData.clear();
+
+        // can not call initAdapter directly, as it can be overridden to do different stuff
+        mAdapter = new LazyAdapter<Type>(mData, LazyListFragment.this);
+        setMaxDataLength(null);
+
+        setListAdapter(mAdapter);
         getListView().setOnScrollListener(mScrollListener);
     }
 
@@ -137,7 +145,7 @@ public class LazyListFragment<T> extends android.support.v4.app.ListFragment {
     }
 
     /**
-     * Subclasses should override this method to load specific page
+     * Subclasses should override this method to load specific page - data/URL
      *
      * @param page page to load
      */
@@ -148,6 +156,7 @@ public class LazyListFragment<T> extends android.support.v4.app.ListFragment {
 
     /**
      * Notifies adapter when page was loaded
+     * Should be called from loadPage callback, so it supports asynchronous loading
      *
      * @param pageNumber page loaded
      */
@@ -169,29 +178,35 @@ public class LazyListFragment<T> extends android.support.v4.app.ListFragment {
 
     /**
      * Loading failed
+     * Should be called from loadPage callback, if asynchronous call was not successful
      *
      * @param reason reason ID
      */
     protected synchronized void onDataLoadingFailed(int reason, final Integer page) {
         mLoading = false;
+        boolean showRepeatDialog = false;
 
         switch (reason) {
             case REASON_LIST_END:
-                Toast.makeText(getActivity(), R.string.list_end, Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), R.string.lazy_load_list_end, Toast.LENGTH_SHORT).show();
                 mBlockLazyLoad = true;
                 break;
             case REASON_SERVER_ERROR:
-                Toast.makeText(getActivity(), R.string.server_error_msg, Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), R.string.lazy_load_server_error_msg, Toast.LENGTH_SHORT).show();
                 break;
             case REASON_CONNECTION_LOST:
+                showRepeatDialog = true;
+                break;
+            case REASON_REQUEST_CANCELLED:
+                Toast.makeText(getActivity(), R.string.lazy_load_cancelled, Toast.LENGTH_SHORT).show();
                 break;
             default:
-                Toast.makeText(getActivity(), R.string.unknown_error, Toast.LENGTH_SHORT).show();
-                //TODO throw error?
+                showRepeatDialog = true;
+                Toast.makeText(getActivity(), R.string.lazy_load_unknown_error, Toast.LENGTH_SHORT).show();
                 break;
         }
 
-        if (getActivity() != null) {
+        if (getActivity() != null && showRepeatDialog) {
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -206,7 +221,6 @@ public class LazyListFragment<T> extends android.support.v4.app.ListFragment {
         }
     }
 
-
     /**
      * Sets maximal data length to be possible to load with lazy loading
      * If data length oversizes max length, lazy loading by scroll will be further disabled
@@ -215,11 +229,7 @@ public class LazyListFragment<T> extends android.support.v4.app.ListFragment {
      */
     public void setMaxDataLength(Integer maxLength) {
         maxDataLength = maxLength;
-        if (maxDataLength != null) {
-            mBlockLazyLoad = mData.size() <= maxDataLength;
-        } else {
-            mBlockLazyLoad = false;
-        }
+        mBlockLazyLoad = maxDataLength != null && mData.size() <= maxLength;
     }
 
     /**
@@ -228,7 +238,7 @@ public class LazyListFragment<T> extends android.support.v4.app.ListFragment {
     private void checkMaxDataLength() {
         if (maxDataLength != null && mData.size() >= maxDataLength) {
             mBlockLazyLoad = true;
-            Toast.makeText(getActivity(), R.string.list_end, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), R.string.lazy_load_list_end, Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -267,22 +277,22 @@ public class LazyListFragment<T> extends android.support.v4.app.ListFragment {
      */
     private void showRepeatDialog(final int page) {
         if (getActivity() != null) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            builder.setMessage(R.string.repeat_req_msg);
-            builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.dismiss();
-                    loadPage(page);
-                }
-            });
-            builder.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.dismiss();
-                }
-            });
-            mRepeatDialog = builder.show();
+            mRepeatDialog = new AlertDialog.Builder(getActivity())
+                    .setMessage(R.string.lazy_load_repeat_req_msg)
+                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                            loadPage(page);
+                        }
+                    })
+                    .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    })
+                    .show();
             mRepeatDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
                 @Override
                 public void onDismiss(DialogInterface dialog) {

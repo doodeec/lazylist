@@ -14,13 +14,13 @@ import java.util.List;
  *
  * Lazy loading list adapter
  */
-public class LazyAdapter<T> extends BaseAdapter {
+public class LazyAdapter<Type> extends BaseAdapter {
 
-    protected List<T> mData;
+    protected List<Type> mData;
     protected LayoutInflater mInflater;
     protected WeakReference<LazyListFragment> mLazyList;
 
-    public LazyAdapter(List<T> data, LazyListFragment list) {
+    public LazyAdapter(List<Type> data, LazyListFragment list) {
         mData = data;
         mLazyList = new WeakReference<LazyListFragment>(list);
 
@@ -61,7 +61,7 @@ public class LazyAdapter<T> extends BaseAdapter {
     }
 
     @Override
-    public T getItem(int position) {
+    public Type getItem(int position) {
         return mData.get(position);
     }
 }
