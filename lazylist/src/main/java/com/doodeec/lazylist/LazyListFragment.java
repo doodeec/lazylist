@@ -1,5 +1,6 @@
 package com.doodeec.lazylist;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Build;
@@ -249,6 +250,7 @@ public class LazyListFragment<Type> extends ListFragment {
      *
      * @param visible true to show progress, false to hide
      */
+    @SuppressLint("NewApi")
     protected void setLoadingProgress(boolean visible) {
         if (visible) {
             if (Build.VERSION.SDK_INT > Build.VERSION_CODES.HONEYCOMB) {
